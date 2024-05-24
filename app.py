@@ -24,12 +24,14 @@ time = date_columns[1].time_input("Select the time of pickup",
 def get_lat_lon(adress):
     url = "https://nominatim.openstreetmap.org/search"
     params={
-        "q": adress + " New York",
+        "q": f"{adress} New York",
         "format": "json"
     }
-    response = requests.get(url, params=params).json()
-    lat = response[0]["lat"]
-    lon = response[0]["lon"]
+    response = requests.get(url, params=params)
+    print(response)
+    content = response.json()
+    lat = content[0]["lat"]
+    lon = content[0]["lon"]
     return float(lat), float(lon)
 
 location_columns = st.columns(2)
