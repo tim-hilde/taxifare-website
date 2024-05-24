@@ -28,7 +28,7 @@ def get_lat_lon(adress):
         "format": "json"
     }
     response = requests.get(url, params=params)
-    print(response)
+    print(response.content)
     try:
         content = response.json()
         lat = content[0]["lat"]
