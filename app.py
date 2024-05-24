@@ -29,42 +29,51 @@ def get_lat_lon(adress):
     }
     response = requests.get(url, params=params)
     print(response)
-    content = response.json()
-    lat = content[0]["lat"]
-    lon = content[0]["lon"]
-    return float(lat), float(lon)
+    try:
+        content = response.json()
+        lat = content[0]["lat"]
+        lon = content[0]["lon"]
+        return float(lat), float(lon)
+    except:
+        return "Error getting location"
 
 location_columns = st.columns(2)
-pickup = location_columns[0].text_input("Fill in your pickup location", "Manhattan")
-pickup_lat, pickup_lon = get_lat_lon(pickup)
-
-dropoff = location_columns[1].text_input("Fill in your dropoff location", "Upper West Side")
-dropoff_lat, dropoff_lon = get_lat_lon(dropoff)
-
+pickup = get_lat_lon(location_columns[0].text_input("Fill in your pickup location", "Manhattan"))
+dropoff = get_lat_lon(location_columns[1].text_input("Fill in your dropoff location", "Upper West Side"))
 passenger_count = st.slider("Select number of passengers", min_value=1, max_value=10, value= 1)
 
-st.map(
-    pd.DataFrame(
-        {
-            "lat": [pickup_lat, dropoff_lat],
-            "lon": [pickup_lon, dropoff_lon]
-        }
+if isinstance(pickup, str) | isinstance(dropoff, str):
+    st.code(
+        '''
+        Error getting location
+        '''
     )
-)
+else:
+    pickup_lat, pickup_lon = pickup
+    dropoff_lat, dropoff_lon = dropoff
 
-url = 'https://taxifare.lewagon.ai/predict'
+    st.map(
+        pd.DataFrame(
+            {
+                "lat": [pickup_lat, dropoff_lat],
+                "lon": [pickup_lon, dropoff_lon]
+            }
+        )
+    )
 
-params = {
-    "pickup_datetime": f"{date} {time}",
-    "pickup_longitude": pickup_lon,
-    "pickup_latitude": pickup_lat,
-    "dropoff_longitude": dropoff_lon,
-    "dropoff_latitude": dropoff_lat,
-    "passenger_count": passenger_count
-}
+    url = 'https://taxifare.lewagon.ai/predict'
 
-if st.button("Calculate fare"):
-    request = requests.get(url, params=params)
-    fare = f"{round(request.json()['fare'], 2)} $"
-    col, col0 = st.columns(2)
-    col.metric("Your fare is", fare)
+    params = {
+        "pickup_datetime": f"{date} {time}",
+        "pickup_longitude": pickup_lon,
+        "pickup_latitude": pickup_lat,
+        "dropoff_longitude": dropoff_lon,
+        "dropoff_latitude": dropoff_lat,
+        "passenger_count": passenger_count
+    }
+
+    if st.button("Calculate fare"):
+        request = requests.get(url, params=params)
+        fare = f"{round(request.json()['fare'], 2)} $"
+        col, col0 = st.columns(2)
+        col.metric("Your fare is", fare)
