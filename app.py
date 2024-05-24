@@ -24,7 +24,7 @@ time = date_columns[1].time_input("Select the time of pickup",
 def get_lat_lon(adress):
     url = "https://nominatim.openstreetmap.org/search"
     params={
-        "q": f"{adress} New York",
+        "q": adress} + " New York",
         "format": "json"
     }
     response = requests.get(url, params=params).json()
